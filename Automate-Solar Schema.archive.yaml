@@ -1,0 +1,197 @@
+definitions:
+  #impinging flux: amount of a specific material from the PVD source that impinges on the substrate per unit time
+  #normalise function can do e.g. applying QCM model to calc fluxes form sources
+  
+  name: Automate-Solar Schema
+  sections:
+    Position: #reusable for all objects that will have a position in the step
+      description: the xyz coordinate of the centre-point of the entity. In the coordinate system where x is the axis via which the substrate is loaded (increasing in the same direction), and z is vertical. x = y = z = 0 is the centre of the substrate holder upon loading in the chamber 
+      quantities:
+        center_xyz:
+          type: int
+          unit: meter
+          shape: [*]
+          description: 
+        center_normal:
+          type: int
+          shape: [*]
+          description: unit vector describing the direction of the source
+        euler_angle:
+
+    Sensor:
+      description: a general sensor that is placed in the PVD chamber
+      sections:
+        position: 
+          section: "#/Position" 
+        sensor_data:
+          section:
+            quantities:
+              data:
+                type: float
+                shape: [*]
+                unit: volt #assumed
+              process_time:
+                type: float
+                shape: [*]
+                unit: second
+                
+    QCMSensor: 
+      description: a qcm sensor as a specific type of Sensor
+      base_section: "#/Sensor"
+      sub_sections: #does this work to just add a new unit to the section defined for Sensor?
+        sensor_data:
+          section:
+            quantities:
+              data:
+                unit: /second #overwriting the default unit of volts
+              lifetime:
+                type: int
+                shape: [*]
+                unit: percent #? 
+              #we are not going to have a time-series data for the calculated impinging flux on the sensor. We would calculate this for the step as a whole          
+        position:
+          section: "#/Position" 
+        
+    ChamberEnvironment:
+      base_sections:
+        - nomad_material_processing.physical_vapor_deposition.ChamberEnvironment
+        #includes gas type and flow, pressure
+      sub_sections:
+        sensors:
+          section: "#/QCMSensor"
+            #how/where to add several QCM sensors?
+        setpoints:
+          section:
+            quantities:
+              pressure:
+                type: float
+                unit: pascal #?
+              flow:
+                type: float
+                unit: meter**3 / second #?
+        
+
+    SputterTarget:
+      sub_sections:
+        material:
+          section: nomad.datamodel.metainfo.basesections.PureSubstanceSection
+          sub_sections:
+            purity:
+              type: float
+              unit: percent #?
+            contaminants:
+              type: string
+              shape: [*]
+            concentrations:
+              type: int
+              shape: [*]
+              unit: ppm #?
+      quantities:
+        area:
+          type: int
+          unit: meter**2
+        thickness:
+          type: int
+          unit: meter #can we use millimeters?
+        backing_plate:
+          type: string #e.g. copper, 2mm, none
+        manufacturer:
+          type: string        
+
+    Magnetron: #what is driving the vapour flux. Based on EvaporationSource, which has only power (time series). need to add a voltage time series
+      base_sections:
+        - nomad_material_processing.physical_vapor_deposition.EvaporationSource
+      sub_sections:
+        setpoints:
+          section:
+            quantities:
+              power:
+                type: float
+                unit: watt
+              voltage:
+                type: float
+                unit: volt
+              current:
+                type: float
+                unit: ampere 
+
+        voltage:
+          section:
+            quantities:
+              voltage:
+                type: float
+                shape: [*]
+                unit: volt
+              process_time:
+                type: float
+                shape: [*]
+                unit: second
+        current:
+          section:
+            quantities:
+              current:
+                type: float
+                shape: [*]
+                unit: ampere
+              process_time:
+                type: float
+                shape: [*]
+                unit: second
+        
+        #questionalbe whether magnetrons need positions when the targets have them?
+        #position: 
+        #  section: "#/Position" #syntax for reusing a section in the current schema
+        
+        power_supply:
+          section:
+            quantities:
+              supply_type:
+                type: str
+                description: e.g. RF or pulsed DC 
+              frequency:
+                type: int
+                unit: /second
+                description: pulse frequence of source 
+
+    SputterSource:  #the manifestation of sputtering flux
+        base_sections:
+          - nomad_material_processing.physical_vapor_deposition.PVDSource
+        sub_sections:
+          vapor_source: #overwriting the existing one
+            section: "#/Magnetron"
+          material: #overwriting
+            section:
+              base_sections:
+                - nomad.datamodel.metainfo.basesections.CompositeSystemReference
+              quantities:
+                reference: 
+                  type: "#/SputterTarget"
+
+    AutomateSolarSputterDeposition:
+      base_sections:
+      - nomad_material_processing.physical_vapor_deposition.SputterDeposition
+      - nomad.datamodel.data.EntryData
+
+      sub_sections:
+        steps:
+          section: 
+            base_sections:
+            - nomad_material_processing.physical_vapor_deposition.VaporDepositionStep
+            sub_sections:
+              sources: #overwriting existing one
+                section: "#/SputterSource"
+              environment:
+                section: "#/ChamberEnvironment"
+          repeats: true    
+            
+
+          
+
+    #Substrates
+    #Instrument
+
+
+            
+        
+
+    
