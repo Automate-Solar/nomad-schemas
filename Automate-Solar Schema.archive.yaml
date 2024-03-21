@@ -5,7 +5,7 @@ definitions:
   name: Automate-Solar Schema
   sections:
     Position: #reusable for all objects that will have a position in the step
-      description: the xyz coordinate of the centre-point of the entity. In the coordinate system where x is the axis via which the substrate is loaded (increasing in the same direction), and z is vertical. x = y = z = 0 is the centre of the substrate holder upon loading in the chamber 
+      description: the xyz coordinate of the centre-point of the entity. BERTHA's coordinate system is defined where x is the axis via which the substrate is loaded (increasing in the same direction), and z is vertical. x = y = z = 0 is the centre of the substrate holder upon loading in the chamber 
       quantities:
         center_xyz:
           type: int
@@ -17,6 +17,8 @@ definitions:
           shape: [*]
           description: unit vector describing the direction of the source
         euler_angle:
+          type: int
+          description: angle of rotation of object arounf its centre_normal
 
     Sensor:
       description: a general sensor that is placed in the PVD chamber
@@ -38,7 +40,7 @@ definitions:
     QCMSensor: 
       description: a qcm sensor as a specific type of Sensor
       base_section: "#/Sensor"
-      sub_sections: #does this work to just add a new unit to the section defined for Sensor?
+      sub_sections: #does this work, to just add a new unit to the section defined for Sensor?
         sensor_data:
           section:
             quantities:
@@ -48,10 +50,16 @@ definitions:
                 type: int
                 shape: [*]
                 unit: percent #? 
-              #we are not going to have a time-series data for the calculated impinging flux on the sensor. We would calculate this for the step as a whole          
-        position:
-          section: "#/Position" 
-        
+              #we are not going to produce time-series data for the calculated impinging flux on the sensor. We would calculate this for the step as a whole          
+        crystal_info:
+          section:
+            quantities:
+              type:
+                type: string # e.g. quartz 6MHz
+              contacts:
+                type: string # e.g. gold, silver ... 
+              
+
     ChamberEnvironment:
       base_sections:
         - nomad_material_processing.physical_vapor_deposition.ChamberEnvironment
@@ -70,7 +78,6 @@ definitions:
                 type: float
                 unit: meter**3 / second #?
         
-
     SputterTarget:
       sub_sections:
         material:
@@ -114,7 +121,6 @@ definitions:
               current:
                 type: float
                 unit: ampere 
-
         voltage:
           section:
             quantities:
@@ -138,7 +144,7 @@ definitions:
                 shape: [*]
                 unit: second
         
-        #questionalbe whether magnetrons need positions when the targets have them?
+        #questionable whether magnetrons need positions? position of what exactly?
         #position: 
         #  section: "#/Position" #syntax for reusing a section in the current schema
         
@@ -158,7 +164,9 @@ definitions:
           - nomad_material_processing.physical_vapor_deposition.PVDSource
         sub_sections:
           vapor_source: #overwriting the existing one
-            section: "#/Magnetron"
+            base_section: "#/Magnetron"
+          source_origin: 
+            section: "#/Position" #where the flux originates from (target centre position in this case)
           material: #overwriting
             section:
               base_sections:
@@ -166,7 +174,7 @@ definitions:
               quantities:
                 reference: 
                   type: "#/SputterTarget"
-
+    
     AutomateSolarSputterDeposition:
       base_sections:
       - nomad_material_processing.physical_vapor_deposition.SputterDeposition
