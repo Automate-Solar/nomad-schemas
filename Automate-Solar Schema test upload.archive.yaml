@@ -49,7 +49,7 @@ definitions:
     QCMSensor: 
       description: a qcm sensor as a specific type of Sensor
       base_section: "#/Sensor"
-      sub_sections: #does this work, to just add a new unit to the section defined for Sensor?
+      sub_sections: 
         crystal_info:
           section:
             quantities:
@@ -96,7 +96,23 @@ definitions:
               error:
                 type: float
                 unit: gram / meter**2
-                            
+    
+    ChamberEnvironment:
+      base_section: nomad.datamodel.data.ArchiveSection
+      #  - nomad_material_processing.physical_vapor_deposition.ChamberEnvironment #includes gas type and flow, pressure
+      #sections:
+      #  gas_flow:
+      sub_sections:
+        gas:
+          sub_section: nomad_material_processing.vapor_deposition.GasFlow
+          #OBS!! want to have "gas" here, not gas pressure, but cannot get a link.    
+        pressure:
+          section:
+            quantities: 
+              value:
+                type: float    
+      
+                       
     ##works to here      
         
           
