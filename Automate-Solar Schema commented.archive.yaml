@@ -20,41 +20,33 @@ definitions:
           type: float
           description: angle of rotation of object around its centre_normal
 
+    TimeSeriesData: #reusable for all time series data
+      quantities:
+        times:
+          type: float
+          shape: [*]
+        values:
+          type: float
+          shape: [*]
+        mean:
+          type: float
+        standard_deviation:
+          type: float
+        slope:
+          type: float
+          
     Sensor:
       description: a general sensor that is placed in the PVD chamber
       sections:
         position: 
           section: "#/Position" 
         sensor_data:
-          section:
-            quantities:
-              data:
-                type: float
-                shape: [*]
-                unit: volt #assumed
-              process_time:
-                type: float
-                shape: [*]
-                unit: second
-                
+          section: "#/TimeSeriesData"
+                            
     QCMSensor: 
       description: a qcm sensor as a specific type of Sensor
       base_section: "#/Sensor"
       sub_sections: #does this work, to just add a new unit to the section defined for Sensor?
-        sensor_data:
-          section:
-            quantities:
-              data:
-                unit: /second #overwriting the default unit of volts
-              lifetime:
-                type: float
-                shape: [*]
-                unit: percent 
-              total_impinging_flux:
-                type: float
-                shape: [*]
-                unit: gram / meter**2
-              #we may or may not produce time-series data for the calculated impinging flux on the sensor. We may alternatively calculate it for the step as a whole. but this is still a relevant quantity in principle
         crystal_info:
           section:
             quantities:
@@ -63,7 +55,25 @@ definitions:
               resonant_frequency:
                 type: float
                 unit: /second
-              
+        sensor_data:
+          sections:
+            quantities:
+              values:
+                unit: /second #adding the relevant unit for this time series
+                #NOTE: need to add units to the mean, stdev and slope...
+        derived_quantities:
+          sections:
+            lifetime:
+              section: "#/TimeSeriesData"
+                quantities:
+                  values:
+                    unit: percent #adding the relevant unit for this time series
+            total_impinging_flux: #we may or may not produce time-series data for the calculated impinging flux on the sensor. We may alternatively calculate it for the step as a whole. but this is still a relevant quantity in principle
+              section: "#/TimeSeriesData"
+                quantities:
+                  values:
+                    unit: gram / meter**2
+            
     ChamberEnvironment:
       base_sections:
         - nomad_material_processing.physical_vapor_deposition.ChamberEnvironment #includes gas type and flow, pressure
@@ -125,29 +135,22 @@ definitions:
                 type: float
                 unit: ampere 
         #below are the measured/actual values provided by the source
-        #power is already included in EvaporationSource
+        #power is already included in EvaporationSource but is extended here
+        power:
+          section: "#/TimeSeriesData"
+            quantities:
+              values:
+                unit: watt
         voltage:
-          section:
+          section: "#/TimeSeriesData"
             quantities:
-              voltage:
-                type: float
-                shape: [*]
+              values:
                 unit: volt
-              process_time:
-                type: float
-                shape: [*]
-                unit: second
         current:
-          section:
+          section: "#/TimeSeriesData"
             quantities:
-              current:
-                type: float
-                shape: [*]
+              values:
                 unit: ampere
-              process_time:
-                type: float
-                shape: [*]
-                unit: second
         
         #questionable whether magnetrons need positions? position of what exactly?
         #position: 
@@ -207,7 +210,7 @@ definitions:
                     unit: second
                   power_setpoints:
                     type: int
-                    shape: [*]
+                    shape: [*] #for each magnetron
                     unit: watt
                   end_voltages:
                     type: int
