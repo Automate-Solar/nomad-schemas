@@ -4,21 +4,21 @@ definitions:
   
   name: Automate-Solar Schema
   sections:
-    Position: #reusable for all objects that will have a position in the step
-      description: the xyz coordinate of the centre-point of the entity. BERTHA's coordinate system is defined where x is the axis via which the substrate is loaded (increasing in the same direction), and z is vertical. x = y = z = 0 is the centre of the substrate holder upon loading in the chamber 
+    Position: #reusable for all objects that have a position in the sputtering (or other) process
+      description: In BERTHA's coordinate system, x is the axis via which the substrate is loaded (increasing in the same direction), and z is vertical. x = y = z = 0 is the centre of the substrate holder upon loading in the chamber 
       quantities:
         center_xyz:
-          type: int
+          type: float
           unit: meter
           shape: [*]
           description: 
         center_normal:
-          type: int
+          type: float
           shape: [*]
           description: unit vector describing the direction of the source
-        euler_angle:
-          type: int
-          description: angle of rotation of object arounf its centre_normal
+        rotation:
+          type: float
+          description: angle of rotation of object around its centre_normal
 
     Sensor:
       description: a general sensor that is placed in the PVD chamber
@@ -47,28 +47,31 @@ definitions:
               data:
                 unit: /second #overwriting the default unit of volts
               lifetime:
-                type: int
+                type: float
                 shape: [*]
                 unit: percent #? 
-              #we are not going to produce time-series data for the calculated impinging flux on the sensor. We would calculate this for the step as a whole          
+              total_impinging_flux:
+                type: float
+                shape: [*]
+                unit: gram / meter**2 #? 
+              #we may or may not produce time-series data for the calculated impinging flux on the sensor. We may alternatively calculate it for the step as a whole. but this is still a relevant quantity in principle
         crystal_info:
           section:
             quantities:
               type:
-                type: string # e.g. quartz 6MHz
-              contacts:
-                type: string # e.g. gold, silver ... 
+                type: string # e.g. quartz 6MHz gold contacts, part number etc
+              resonant_frequency:
+                type: float
+                unit: /second
               
-
     ChamberEnvironment:
       base_sections:
-        - nomad_material_processing.physical_vapor_deposition.ChamberEnvironment
-        #includes gas type and flow, pressure
+        - nomad_material_processing.physical_vapor_deposition.ChamberEnvironment #includes gas type and flow, pressure
       sub_sections:
         sensors:
           section: "#/QCMSensor"
             #how/where to add several QCM sensors?
-        setpoints:
+        setpoints: #is this the appropriate place to add these? i.e. the experimental settings for the values that are subsequently measured?
           section:
             quantities:
               pressure:
@@ -95,7 +98,7 @@ definitions:
               unit: ppm #?
       quantities:
         area:
-          type: int
+          type: float
           unit: meter**2
         thickness:
           type: int
@@ -105,7 +108,7 @@ definitions:
         manufacturer:
           type: string        
 
-    Magnetron: #what is driving the vapour flux. Based on EvaporationSource, which has only power (time series). need to add a voltage time series
+    Magnetron: #The thing that is driving the vapour flux. 
       base_sections:
         - nomad_material_processing.physical_vapor_deposition.EvaporationSource
       sub_sections:
@@ -151,6 +154,9 @@ definitions:
         power_supply:
           section:
             quantities:
+              instrument_id:
+                type: str
+                description: identifier for a specific instrument 
               supply_type:
                 type: str
                 description: e.g. RF or pulsed DC 
@@ -159,14 +165,14 @@ definitions:
                 unit: /second
                 description: pulse frequence of source 
 
-    SputterSource:  #the manifestation of sputtering flux
+    SputterFlux:  #the manifestation of sputtering flux
         base_sections:
           - nomad_material_processing.physical_vapor_deposition.PVDSource
         sub_sections:
           vapor_source: #overwriting the existing one
             base_section: "#/Magnetron"
-          source_origin: 
-            section: "#/Position" #where the flux originates from (target centre position in this case)
+          flux_origin: 
+            section: "#/Position" #position where the flux originates from (target centre position in this case)
           material: #overwriting
             section:
               base_sections:
