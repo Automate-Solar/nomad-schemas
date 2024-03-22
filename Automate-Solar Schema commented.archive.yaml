@@ -1,7 +1,10 @@
 definitions:
+  #impinging flux: amount of a specific material from the PVD source that impinges on the substrate per unit time
+  #normalise function can do e.g. applying QCM model to calc fluxes form sources
+  
   name: Automate-Solar Schema
   sections:
-    Position:
+    Position: #reusable for all objects that have a position in the sputtering (or other) process
       description: In BERTHA's coordinate system, x is the axis via which the substrate is loaded (increasing in the same direction), and z is vertical. x = y = z = 0 is the centre of the substrate holder upon loading in the chamber 
       quantities:
         center_xyz:
@@ -28,7 +31,7 @@ definitions:
               data:
                 type: float
                 shape: [*]
-                unit: volt
+                unit: volt #assumed
               process_time:
                 type: float
                 shape: [*]
@@ -37,12 +40,12 @@ definitions:
     QCMSensor: 
       description: a qcm sensor as a specific type of Sensor
       base_section: "#/Sensor"
-      sub_sections:
+      sub_sections: #does this work, to just add a new unit to the section defined for Sensor?
         sensor_data:
           section:
             quantities:
               data:
-                unit: /second 
+                unit: /second #overwriting the default unit of volts
               lifetime:
                 type: float
                 shape: [*]
@@ -51,24 +54,24 @@ definitions:
                 type: float
                 shape: [*]
                 unit: gram / meter**2
-              
+              #we may or may not produce time-series data for the calculated impinging flux on the sensor. We may alternatively calculate it for the step as a whole. but this is still a relevant quantity in principle
         crystal_info:
           section:
             quantities:
               type:
-                type: string 
+                type: string # e.g. quartz 6MHz gold contacts, part number etc
               resonant_frequency:
                 type: float
                 unit: /second
               
     ChamberEnvironment:
       base_sections:
-        - nomad_material_processing.physical_vapor_deposition.ChamberEnvironment 
+        - nomad_material_processing.physical_vapor_deposition.ChamberEnvironment #includes gas type and flow, pressure
       sub_sections:
         sensors:
           section: "#/QCMSensor"
-            
-        setpoints: 
+            #how/where to add several QCM sensors?
+        setpoints: #is this the appropriate place to add these? i.e. the experimental settings for the values that are subsequently measured?
           section:
             quantities:
               pressure:
@@ -77,7 +80,7 @@ definitions:
               flow:
                 type: float
                 unit: meter**3 / second
-        
+                
     SputterTarget:
       sub_sections:
         material:
@@ -101,26 +104,28 @@ definitions:
           type: int
           unit: meter
         backing_plate:
-          type: string 
+          type: string #e.g. copper, 2mm, none
         manufacturer:
           type: string        
 
-    Magnetron: 
+    Magnetron: #The thing that is driving the vapour flux. 
       base_sections:
         - nomad_material_processing.physical_vapor_deposition.EvaporationSource
       sub_sections:
-        setpoints:
+        setpoints: #settings that are supplied to/requested from the source
           section:
             quantities:
-              power:
+              set_power: 
                 type: float
                 unit: watt
-              voltage:
+              set_voltage:
                 type: float
                 unit: volt
-              current:
+              set_current:
                 type: float
                 unit: ampere 
+        #below are the measured/actual values provided by the source
+        #power is already included in EvaporationSource
         voltage:
           section:
             quantities:
@@ -144,6 +149,9 @@ definitions:
                 shape: [*]
                 unit: second
         
+        #questionable whether magnetrons need positions? position of what exactly?
+        #position: 
+        #  section: "#/Position" #syntax for reusing a section in the current schema
         
         power_supply:
           section:
@@ -159,15 +167,15 @@ definitions:
                 unit: /second
                 description: pulse frequence of source 
 
-    SputterFlux:
+    SputterFlux:  #the manifestation of sputtering flux
         base_sections:
           - nomad_material_processing.physical_vapor_deposition.PVDSource
         sub_sections:
-          vapor_source:
+          vapor_source: #overwriting the existing one
             base_section: "#/Magnetron"
           flux_origin: 
-            section: "#/Position"
-          material: 
+            section: "#/Position" #position where the flux originates from (target centre position in this case)
+          material: #overwriting
             section:
               base_sections:
                 - nomad.datamodel.metainfo.basesections.CompositeSystemReference
@@ -181,18 +189,46 @@ definitions:
       - nomad.datamodel.data.EntryData
 
       sub_sections:
+        preparation:
+          sections:
+            base_pressure:
+              sections:
+                quantities:
+                  base_pressure:
+                    type: float
+                    unit: pascal
+                    description: the base pressure of the vacuum chamber prior to initating an experiment
+            presputtering:
+              sections:
+                quantities:
+                  presputter time:
+                    type: int
+                    shape: [*] #for each magnetron
+                    unit: second
+                  power_setpoints:
+                    type: int
+                    shape: [*]
+                    unit: watt
+                  end_voltages:
+                    type: int
+                    shape: [*] #for each magnetron
+                    unit: volt
         steps:
-          section: 
+          sections: 
             base_sections:
             - nomad_material_processing.physical_vapor_deposition.VaporDepositionStep
             sub_sections:
-              sources: 
-                section: "#/SputterSource"
+              sources: #overwriting existing one
+                section: "#/Magnetron"
               environment:
                 section: "#/ChamberEnvironment"
           repeats: true    
             
 
+          
+
+    #Substrates
+    #Instrument
 
 
             
