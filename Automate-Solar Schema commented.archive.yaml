@@ -25,16 +25,17 @@ definitions:
         times:
           type: float
           shape: [*]
+          unit: volt
         values:
           type: float
           shape: [*]
+          unit: volt
         mean:
           type: float
         standard_deviation:
           type: float
-        slope:
-          type: float
-          
+          unit: volt
+                  
     Sensor:
       description: a general sensor that is placed in the PVD chamber
       sections:
@@ -56,31 +57,70 @@ definitions:
                 type: float
                 unit: /second
         sensor_data:
-          sections:
-            quantities:
-              values:
-                unit: /second #adding the relevant unit for this time series
-                #NOTE: need to add units to the mean, stdev and slope...
+          quantities:
+            values:
+              unit: /second
+            mean:
+              unit: /second
+            standard_deviation:
+              unit: /second
         derived_quantities:
           sections:
-            lifetime:
-              section: "#/TimeSeriesData"
-                quantities:
-                  values:
-                    unit: percent #adding the relevant unit for this time series
-            total_impinging_flux: #we may or may not produce time-series data for the calculated impinging flux on the sensor. We may alternatively calculate it for the step as a whole. but this is still a relevant quantity in principle
-              section: "#/TimeSeriesData"
-                quantities:
-                  values:
-                    unit: gram / meter**2
-            
+            remaining_lifetime:
+              quantities:
+                value:
+                  type: float
+                  unit: percent
+                error: 
+                  type: float
+                  unit: percent
+            frequency_change:
+              quantities:
+                value:
+                  type: float
+                  unit: /s
+                error:
+                  type: float
+                  unit: /s
+            mass_change:
+              quantities:
+                value:
+                  type: float
+                  unit: gram / meter**2
+                error:
+                  type: float
+                  unit: gram / meter**2
+                    
     ChamberEnvironment:
-      base_sections:
-        - nomad_material_processing.physical_vapor_deposition.ChamberEnvironment #includes gas type and flow, pressure
-      sub_sections:
+      #base_sections:
+      #  - nomad_material_processing.physical_vapor_deposition.ChamberEnvironment #includes gas type and flow, pressure
+      sections:
+        gas_flow:
+          base_sections:
+            - nomad_material_processing.vapor_deposition.GasFlow.gas
+          sub_sections:
+            flow:
+              section: "#/TimeSeriesData"
+                quantities:
+                  values:
+                    unit: meter**3 / second
+                  mean:
+                    unit: meter**3 / second
+                  standard_deviation:
+                    unit: meter**3 / second
+        pressure:
+          section: "#/TimeSeriesData"
+            quantities:
+              values:
+                unit: pascal
+              mean:
+                unit: pascal
+              standard_deviation:
+                unit: pascal
+
         sensors:
           section: "#/QCMSensor"
-            #how/where to add several QCM sensors?
+            #how/where to add SEVERAL QCM sensors?
         setpoints: #is this the appropriate place to add these? i.e. the experimental settings for the values that are subsequently measured?
           section:
             quantities:
@@ -90,7 +130,7 @@ definitions:
               flow:
                 type: float
                 unit: meter**3 / second
-                
+
     SputterTarget:
       sub_sections:
         material:
@@ -141,15 +181,27 @@ definitions:
             quantities:
               values:
                 unit: watt
+              mean:
+                unit: watt
+              standard_deviation:
+                unit: watt
         voltage:
           section: "#/TimeSeriesData"
             quantities:
               values:
                 unit: volt
+              mean:
+                unit: volt
+              standard_deviation:
+                unit: volt
         current:
           section: "#/TimeSeriesData"
             quantities:
               values:
+                unit: ampere
+              mean:
+                unit: ampere
+              standard_deviation:
                 unit: ampere
         
         #questionable whether magnetrons need positions? position of what exactly?
@@ -190,7 +242,6 @@ definitions:
       base_sections:
       - nomad_material_processing.physical_vapor_deposition.SputterDeposition
       - nomad.datamodel.data.EntryData
-
       sub_sections:
         preparation:
           sections:
