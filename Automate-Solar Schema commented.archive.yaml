@@ -140,7 +140,7 @@ definitions:
     SputterTarget:
       sub_sections:
         material:
-          section: nomad.datamodel.metainfo.basesections.PureSubstanceSection
+          base_section: nomad.datamodel.metainfo.basesections.PureSubstanceSection
           sub_sections:
             purity:
               type: float
@@ -159,9 +159,8 @@ definitions:
         thickness:
           type: int
           unit: meter
-        backing_plate:
-          type: string #e.g. copper, 2mm, none
-        manufacturer:
+        other_information:
+          description: e.g. manufacturer, backing plate and bonding etc. 
           type: string        
 
     Magnetron: #The thing that is driving the vapour flux. 

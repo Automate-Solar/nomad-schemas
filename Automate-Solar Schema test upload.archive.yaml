@@ -37,7 +37,6 @@ definitions:
           type: float
           unit: volt
           
-                  
     Sensor:
       description: a general sensor that is placed in the PVD chamber
       sub_sections:
@@ -104,15 +103,52 @@ definitions:
       #  gas_flow:
       sub_sections:
         gas:
-          sub_section: nomad_material_processing.vapor_deposition.GasFlow
-          #OBS!! want to have "gas" here, not gas pressure, but cannot get a link.    
-        pressure:
           section:
-            quantities: 
-              value:
-                type: float    
-      
-                       
+            quantities:
+              gas_type:
+                type: str
+                #would like to replace with Gas object but need directory/name
+        
+        setpoints: #is this the appropriate place to add these? i.e. the experimental settings for the values that are subsequently measured?
+          section:
+            quantities:
+              pressure:
+                type: float
+                unit: pascal
+              flow:
+                type: float
+                unit: meter**3 / second
+
+        pressure:
+          section: "#/TimeSeriesData"
+          ## NEED TO OVERWRITE UNITS IN TIME SERIES (HOW??)
+        flow: 
+          section: "#/TimeSeriesData"
+          ## NEED TO OVERWRITE UNITS IN TIME SERIES (HOW??) 
+        sensors:
+          section: "#/QCMSensor"
+            #how/where to add SEVERAL QCM sensors?
+          repeats: true
+
+    SputterTarget:
+      sections:
+        material:
+          base_section: nomad.datamodel.metainfo.basesections.PureSubstanceSection
+          ## WANT TO ADD: purity, contaminants, concentraitons
+          
+      quantities:
+        area:
+          type: float
+          unit: meter**2
+        thickness:
+          type: int
+          unit: meter
+        other_information:
+          description: e.g. manufacturer, backing plate and bonding etc. 
+          type: str              
+
+    
+    
     ##works to here      
         
           
