@@ -132,11 +132,18 @@ definitions:
           repeats: true
 
     SputterTarget:
-      sections:
-        material:
-          base_section: nomad.datamodel.metainfo.basesections.PureSubstanceSection
-          ## WANT TO ADD: purity, contaminants, concentraitons
-          
+      material:
+        section:
+          base_sections:
+            - nomad.datamodel.metainfo.basesections.PureSubstanceSection
+          sub_sections:
+            other_information:
+              section:
+                quantities:
+                  purity:
+                    description: overall chemical purity e.g. 4N
+                    type: str
+                ## WANT TO ADD: purity, contaminants, concentraitons
       quantities:
         area:
           type: float
@@ -147,14 +154,22 @@ definitions:
         other_information:
           description: e.g. manufacturer, backing plate and bonding etc. 
           type: str              
-      
-         
-      
 
-    Magnetron: #The thing that is driving the vapour flux. 
+    Magnetron: #The thing that is creating the vapour flux. 
       base_sections:
         - nomad_material_processing.physical_vapor_deposition.EvaporationSource
       sub_sections:
+        material:
+          section:
+            base_sections:
+              - nomad.datamodel.metainfo.basesections.CompositeSystemReference
+            sub_sections:
+            #CHECK THIS
+              sputter_target:  
+                section:
+                  quantities:
+                    reference: 
+                      type: "#/SputterTarget" 
         setpoints: #settings that are supplied to/requested from the source
           section:
             quantities:
@@ -168,7 +183,6 @@ definitions:
                 type: float
                 unit: ampere 
         #below are the measured/actual values provided by the source
-        #power is already included in EvaporationSource but is extended here
         power:
           section: "#/TimeSeriesData"
             ## NEED TO OVERWRITE UNITS IN TIME SERIES (HOW??)
@@ -178,7 +192,11 @@ definitions:
         current:
           section: "#/TimeSeriesData"
             ## NEED TO OVERWRITE UNITS IN TIME SERIES (HOW??)
-
+        
+        material_flux: #the flux/plume that the source produces
+          section: "#/Position"
+          description: the geometrical origin and direction of the vapor plume
+          #could also add model parameters for distribution according to e.g. the cos-cos model
         
         power_supply:
           section:
@@ -193,39 +211,19 @@ definitions:
                 type: int
                 unit: hertz
                 description: pulse frequence of source   
-  
-    
-    SputterFlux:  #the manifestation of sputtering flux
-      base_sections:
-        - nomad_material_processing.physical_vapor_deposition.PVDSource
-      sub_sections:
-        vapor_source: 
-          section: "#/Magnetron" #overwriting the existing one
-          #base_section: 
-        vapour_origin: 
-            section: "#/Position"
-        
-        material: #overwriting
-            section:
-              base_sections:
-                - nomad.datamodel.metainfo.basesections.CompositeSystemReference
-              sub_sections:
-              #CHECK THIS
-                sputter_target:  
-                    section:
-                      quantities:
-                        reference: 
-                          type: "#/SputterTarget" 
-    
+
     AutomateSolarSputterDeposition:
       base_sections:
       - nomad_material_processing.physical_vapor_deposition.SputterDeposition
       - nomad.datamodel.data.EntryData
       sub_sections:
-        
-        presputtering:
+        preparation:
           section:
             quantities:
+              base_pressure:
+                type: float
+                unit: pascal
+                description: the base pressure of the vacuum chamber prior to initating an experiment  
               presputter time:
                 type: int
                 shape: ['*'] #for each magnetron
@@ -238,11 +236,16 @@ definitions:
                 type: int
                 shape: ['*'] #for each magnetron
                 unit: volt
-  
-      quantities:
-        base_pressure:
-          type: float
-          unit: pascal
-          description: the base pressure of the vacuum chamber prior to initating an experiment  
-    
+        steps:
+          section:
+            base_sections:
+            - nomad_material_processing.physical_vapor_deposition.VaporDepositionStep
+            sub_sections:
+              environment:
+                section: "#/ChamberEnvironment"
+              sources:
+                section: "#/Magnetron"
+                repeats: true
+          repeats: true   
+      
 ##works to here
