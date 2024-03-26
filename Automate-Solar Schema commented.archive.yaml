@@ -37,7 +37,6 @@ definitions:
           type: float
           unit: volt
           
-                  
     Sensor:
       description: a general sensor that is placed in the PVD chamber
       sub_sections:
@@ -49,7 +48,7 @@ definitions:
     QCMSensor: 
       description: a qcm sensor as a specific type of Sensor
       base_section: "#/Sensor"
-      sub_sections: #does this work, to just add a new unit to the section defined for Sensor?
+      sub_sections: 
         crystal_info:
           section:
             quantities:
@@ -96,38 +95,22 @@ definitions:
               error:
                 type: float
                 unit: gram / meter**2
-                    
+    
     ChamberEnvironment:
-      #base_sections:
+      base_section: nomad.datamodel.data.ArchiveSection
       #  - nomad_material_processing.physical_vapor_deposition.ChamberEnvironment #includes gas type and flow, pressure
-      sections:
-        gas_flow:
-          base_sections:
-            - nomad_material_processing.vapor_deposition.GasFlow.gas
-          sub_sections:
-            flow:
-              section: "#/TimeSeriesData"
-                quantities:
-                  values:
-                    unit: meter**3 / second
-                  mean:
-                    unit: meter**3 / second
-                  standard_deviation:
-                    unit: meter**3 / second
-        pressure:
-          section: "#/TimeSeriesData"
+      #sections:
+      #  gas_flow:
+      sub_sections:
+        gas:
+          section:
             quantities:
-              values:
-                unit: pascal
-              mean:
-                unit: pascal
-              standard_deviation:
-                unit: pascal
-
-        sensors:
-          section: "#/QCMSensor"
-            #how/where to add SEVERAL QCM sensors?
+              gas_type:
+                type: str
+                #would like to replace with Gas object but need directory/name
+        
         setpoints: #is this the appropriate place to add these? i.e. the experimental settings for the values that are subsequently measured?
+        #setpoints might instead be added to the "step"
           section:
             quantities:
               pressure:
@@ -137,21 +120,30 @@ definitions:
                 type: float
                 unit: meter**3 / second
 
+        pressure:
+          section: "#/TimeSeriesData"
+          ## NEED TO OVERWRITE UNITS IN TIME SERIES (HOW??)
+        flow: 
+          section: "#/TimeSeriesData"
+          ## NEED TO OVERWRITE UNITS IN TIME SERIES (HOW??) 
+        sensors:
+          section: "#/QCMSensor"
+            #how/where to add SEVERAL QCM sensors?
+          repeats: true
+
     SputterTarget:
-      sub_sections:
-        material:
-          base_section: nomad.datamodel.metainfo.basesections.PureSubstanceSection
+      material:
+        section:
+          base_sections:
+            - nomad.datamodel.metainfo.basesections.PureSubstanceSection
           sub_sections:
-            purity:
-              type: float
-              unit: percent
-            contaminants:
-              type: string
-              shape: ['*']
-            concentrations:
-              type: int
-              shape: ['*']
-              unit: ppm
+            other_information:
+              section:
+                quantities:
+                  purity:
+                    description: overall chemical purity e.g. 4N
+                    type: str
+                ## WANT TO ADD: purity, contaminants, concentraitons
       quantities:
         area:
           type: float
@@ -161,12 +153,23 @@ definitions:
           unit: meter
         other_information:
           description: e.g. manufacturer, backing plate and bonding etc. 
-          type: string        
+          type: str              
 
-    Magnetron: #The thing that is driving the vapour flux. 
+    Magnetron: #The thing that is creating the vapour flux. 
       base_sections:
         - nomad_material_processing.physical_vapor_deposition.EvaporationSource
       sub_sections:
+        material:
+          section:
+            base_sections:
+              - nomad.datamodel.metainfo.basesections.CompositeSystemReference
+            sub_sections:
+            #CHECK THIS
+              sputter_target:  
+                section:
+                  quantities:
+                    reference: 
+                      type: "#/SputterTarget" 
         setpoints: #settings that are supplied to/requested from the source
           section:
             quantities:
@@ -180,38 +183,20 @@ definitions:
                 type: float
                 unit: ampere 
         #below are the measured/actual values provided by the source
-        #power is already included in EvaporationSource but is extended here
         power:
           section: "#/TimeSeriesData"
-            quantities:
-              values:
-                unit: watt
-              mean:
-                unit: watt
-              standard_deviation:
-                unit: watt
+            ## NEED TO OVERWRITE UNITS IN TIME SERIES (HOW??)
         voltage:
           section: "#/TimeSeriesData"
-            quantities:
-              values:
-                unit: volt
-              mean:
-                unit: volt
-              standard_deviation:
-                unit: volt
+            ## NEED TO OVERWRITE UNITS IN TIME SERIES (HOW??)
         current:
           section: "#/TimeSeriesData"
-            quantities:
-              values:
-                unit: ampere
-              mean:
-                unit: ampere
-              standard_deviation:
-                unit: ampere
+            ## NEED TO OVERWRITE UNITS IN TIME SERIES (HOW??)
         
-        #questionable whether magnetrons need positions? position of what exactly?
-        #position: 
-        #  section: "#/Position" #syntax for reusing a section in the current schema
+        material_flux: #the flux/plume that the source produces
+          section: "#/Position"
+          description: the geometrical origin and direction of the vapor plume
+          #could also add model parameters for distribution according to e.g. the cos-cos model
         
         power_supply:
           section:
@@ -224,73 +209,44 @@ definitions:
                 description: e.g. RF or pulsed DC 
               frequency:
                 type: int
-                unit: /second
-                description: pulse frequence of source 
+                unit: hertz
+                description: pulse frequence of source   
 
-    SputterFlux:  #the manifestation of sputtering flux
-        base_sections:
-          - nomad_material_processing.physical_vapor_deposition.PVDSource
-        sub_sections:
-          vapor_source: #overwriting the existing one
-            base_section: "#/Magnetron"
-          flux_origin: 
-            section: "#/Position" #position where the flux originates from (target centre position in this case)
-          material: #overwriting
-            section:
-              base_sections:
-                - nomad.datamodel.metainfo.basesections.CompositeSystemReference
-              quantities:
-                reference: 
-                  type: "#/SputterTarget"
-    
     AutomateSolarSputterDeposition:
       base_sections:
       - nomad_material_processing.physical_vapor_deposition.SputterDeposition
       - nomad.datamodel.data.EntryData
       sub_sections:
         preparation:
-          sections:
-            base_pressure:
-              sections:
-                quantities:
-                  base_pressure:
-                    type: float
-                    unit: pascal
-                    description: the base pressure of the vacuum chamber prior to initating an experiment
-            presputtering:
-              sections:
-                quantities:
-                  presputter time:
-                    type: int
-                    shape: ['*'] #for each magnetron
-                    unit: second
-                  power_setpoints:
-                    type: int
-                    shape: ['*'] #for each magnetron
-                    unit: watt
-                  end_voltages:
-                    type: int
-                    shape: ['*'] #for each magnetron
-                    unit: volt
+          section:
+            quantities:
+              base_pressure:
+                type: float
+                unit: pascal
+                description: the base pressure of the vacuum chamber prior to initating an experiment  
+              presputter time:
+                type: int
+                shape: ['*'] #for each magnetron
+                unit: second
+              power_setpoints:
+                type: int
+                shape: ['*'] #for each magnetron
+                unit: watt
+              end_voltages:
+                type: int
+                shape: ['*'] #for each magnetron
+                unit: volt
         steps:
-          sections: 
+          section:
             base_sections:
             - nomad_material_processing.physical_vapor_deposition.VaporDepositionStep
             sub_sections:
-              sources: #overwriting existing one
-                section: "#/Magnetron"
               environment:
                 section: "#/ChamberEnvironment"
-          repeats: true    
-            
-
-          
-
-    #Substrates
-    #Instrument
-
-
-            
-        
-
-    
+              sources:
+                section: "#/Magnetron"
+                repeats: true
+          repeats: true   
+      
+#samples
+#instrument info
