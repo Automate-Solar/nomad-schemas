@@ -1,0 +1,248 @@
+definitions:
+  #impinging flux: amount of a specific material from the PVD source that impinges on the substrate per unit time
+  #normalise function can do e.g. applying QCM model to calc fluxes form sources
+  
+  name: Automate-Solar Schema
+  sections:
+    Position: #reusable for all objects that have a position in the sputtering (or other) process
+      description: In BERTHA's coordinate system, x is the axis via which the substrate is loaded (increasing in the same direction), and z is vertical. x = y = z = 0 is the centre of the substrate holder upon loading in the chamber 
+      quantities:
+        center_xyz:
+          type: float
+          unit: meter
+          shape: ['*']
+          description: 
+        center_normal:
+          type: float
+          shape: ['*']
+          description: (unit) vector describing the direction of the source
+        rotation:
+          type: float
+          description: angle of rotation of object around its centre_normal
+
+    TimeSeriesData: #reusable for all time series data
+      quantities:
+        times:
+          type: float
+          shape: ['*']
+          unit: second
+        values:
+          type: float
+          shape: ['*']
+          unit: volt
+        mean:
+          type: float
+          unit: volt
+        error:
+          type: float
+          unit: volt
+          
+    Sensor:
+      description: a general sensor that is placed in the PVD chamber
+      sub_sections:
+        position: 
+          sub_section: "#/Position" 
+        sensor_data:
+          sub_section: "#/TimeSeriesData"
+                            
+    QCMSensor: 
+      description: a qcm sensor as a specific type of Sensor
+      base_section: "#/Sensor"
+      sub_sections: 
+        crystal_info:
+          section:
+            quantities:
+              info:
+                description: e.g. contact materials, part number etc
+                type: str
+              resonant_frequency:
+                type: float
+                unit: hertz
+        sensor_data:
+          section:
+            quantities:
+              values:
+                type: float
+                unit: hertz
+              mean:
+                type: float
+                unit: hertz
+              error:
+                type: float
+                unit: hertz
+        remaining_lifetime:
+          section:
+            quantities:
+              value:
+                type: float
+              error: 
+                type: float
+        frequency_change:
+          section:
+            quantities:
+              value:
+                type: float
+                unit: hertz
+              error:
+                type: float
+                unit: hertz
+        mass_change:
+          section:
+            quantities:
+              value:
+                type: float
+                unit: gram / meter**2
+              error:
+                type: float
+                unit: gram / meter**2
+    
+    ChamberEnvironment:
+      base_section: nomad.datamodel.data.ArchiveSection
+      #  - nomad_material_processing.physical_vapor_deposition.ChamberEnvironment #includes gas type and flow, pressure
+      #sections:
+      #  gas_flow:
+      sub_sections:
+        gas:
+          section:
+            quantities:
+              gas_type:
+                type: str
+                #would like to replace with Gas object but need directory/name
+        
+        setpoints: #is this the appropriate place to add these? i.e. the experimental settings for the values that are subsequently measured?
+        #setpoints might instead be added to the "step"
+          section:
+            quantities:
+              pressure:
+                type: float
+                unit: pascal
+              flow:
+                type: float
+                unit: meter**3 / second
+
+        pressure:
+          section: "#/TimeSeriesData"
+          ## NEED TO OVERWRITE UNITS IN TIME SERIES (HOW??)
+        flow: 
+          section: "#/TimeSeriesData"
+          ## NEED TO OVERWRITE UNITS IN TIME SERIES (HOW??) 
+        sensors:
+          section: "#/QCMSensor"
+            #how/where to add SEVERAL QCM sensors?
+          repeats: true
+
+    SputterTarget:
+      sections:
+        material:
+          base_section: nomad.datamodel.metainfo.basesections.PureSubstanceSection
+          ## WANT TO ADD: purity, contaminants, concentraitons
+          
+      quantities:
+        area:
+          type: float
+          unit: meter**2
+        thickness:
+          type: int
+          unit: meter
+        other_information:
+          description: e.g. manufacturer, backing plate and bonding etc. 
+          type: str              
+      
+         
+      
+
+    Magnetron: #The thing that is driving the vapour flux. 
+      base_sections:
+        - nomad_material_processing.physical_vapor_deposition.EvaporationSource
+      sub_sections:
+        setpoints: #settings that are supplied to/requested from the source
+          section:
+            quantities:
+              set_power: 
+                type: float
+                unit: watt
+              set_voltage:
+                type: float
+                unit: volt
+              set_current:
+                type: float
+                unit: ampere 
+        #below are the measured/actual values provided by the source
+        #power is already included in EvaporationSource but is extended here
+        power:
+          section: "#/TimeSeriesData"
+            ## NEED TO OVERWRITE UNITS IN TIME SERIES (HOW??)
+        voltage:
+          section: "#/TimeSeriesData"
+            ## NEED TO OVERWRITE UNITS IN TIME SERIES (HOW??)
+        current:
+          section: "#/TimeSeriesData"
+            ## NEED TO OVERWRITE UNITS IN TIME SERIES (HOW??)
+
+        
+        power_supply:
+          section:
+            quantities:
+              instrument_id:
+                type: str
+                description: identifier for a specific instrument 
+              supply_type:
+                type: str
+                description: e.g. RF or pulsed DC 
+              frequency:
+                type: int
+                unit: hertz
+                description: pulse frequence of source   
+  
+    
+    SputterFlux:  #the manifestation of sputtering flux
+      base_sections:
+        - nomad_material_processing.physical_vapor_deposition.PVDSource
+      sub_sections:
+        vapor_source: 
+          section: "#/Magnetron" #overwriting the existing one
+          #base_section: 
+        vapour_origin: 
+            section: "#/Position"
+        
+        material: #overwriting
+            section:
+              base_sections:
+                - nomad.datamodel.metainfo.basesections.CompositeSystemReference
+              sub_sections:
+              #CHECK THIS
+                sputter_target:  
+                    section:
+                      quantities:
+                        reference: 
+                          type: "#/SputterTarget" 
+    
+    AutomateSolarSputterDeposition:
+      base_sections:
+      - nomad_material_processing.physical_vapor_deposition.SputterDeposition
+      - nomad.datamodel.data.EntryData
+      sub_sections:
+        
+        presputtering:
+          section:
+            quantities:
+              presputter time:
+                type: int
+                shape: ['*'] #for each magnetron
+                unit: second
+              power_setpoints:
+                type: int
+                shape: ['*'] #for each magnetron
+                unit: watt
+              end_voltages:
+                type: int
+                shape: ['*'] #for each magnetron
+                unit: volt
+  
+      quantities:
+        base_pressure:
+          type: float
+          unit: pascal
+          description: the base pressure of the vacuum chamber prior to initating an experiment  
+    
+##works to here
