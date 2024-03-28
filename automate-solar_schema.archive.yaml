@@ -10,11 +10,11 @@ definitions:
         center_xyz:
           type: float
           unit: meter
-          shape: ['*']
+          shape: [3]
           description: 
         center_normal:
           type: float
-          shape: ['*']
+          shape: [3]
           description: (unit) vector describing the direction of the source
         rotation:
           type: float
@@ -97,11 +97,19 @@ definitions:
                 unit: gram / meter**2
     
     ChamberEnvironment:
-      base_section: nomad.datamodel.data.ArchiveSection
-      #  - nomad_material_processing.physical_vapor_deposition.ChamberEnvironment #includes gas type and flow, pressure
-      #sections:
-      #  gas_flow:
+      base_sections: 
+       - nomad_material_processing.vapor_deposition.ChamberEnvironment #includes gas type and flow, pressure
       sub_sections:
+        gas_flow:
+          section:
+            base_section: "#/TimeSeriesData"
+            quantities:
+              values:
+                type: float
+                unit: meter**3 / second
+            sub_sections:
+              gas:
+                section: nomad.datamodel.metainfo.basesections.PureSubstanceSection
         gas:
           section:
             quantities:
@@ -132,18 +140,9 @@ definitions:
           repeats: true
 
     SputterTarget:
-      material:
-        section:
-          base_sections:
-            - nomad.datamodel.metainfo.basesections.PureSubstanceSection
-          sub_sections:
-            other_information:
-              section:
-                quantities:
-                  purity:
-                    description: overall chemical purity e.g. 4N
-                    type: str
-                ## WANT TO ADD: purity, contaminants, concentraitons
+      base_sections:
+        - nomad.datamodel.metainfo.basesections.CompositeSystem
+        - nomad.datamodel.data.EntryData
       quantities:
         area:
           type: float
@@ -153,23 +152,15 @@ definitions:
           unit: meter
         other_information:
           description: e.g. manufacturer, backing plate and bonding etc. 
-          type: str              
+          type: str
+          m_annotations:
+            eln:
+              component: RichTextEditQuantity            
 
     Magnetron: #The thing that is creating the vapor flux. 
       base_sections:
         - nomad_material_processing.physical_vapor_deposition.EvaporationSource
       sub_sections:
-        material:
-          section:
-            base_sections:
-              - nomad.datamodel.metainfo.basesections.CompositeSystemReference
-            sub_sections:
-            #CHECK THIS
-              sputter_target:  
-                section:
-                  quantities:
-                    reference: 
-                      type: "#/SputterTarget" 
         setpoints: #settings that are supplied to/requested from the source
           section:
             quantities:
@@ -193,12 +184,6 @@ definitions:
           section: "#/TimeSeriesData"
             ## NEED TO OVERWRITE UNITS IN TIME SERIES (HOW??)
         
-        material_flux: #the flux/plume that the source produces
-          #define this as a separate entity? could add model parameters for distribution according to e.g. the Knudsen model (or other model for e.g. PLD)
-          section: "#/Position"
-          description: the geometrical origin and direction of the vapor plume
-          
-        
         power_supply:
           section:
             quantities:
@@ -212,6 +197,34 @@ definitions:
                 type: int
                 unit: hertz
                 description: pulse frequence of source   
+
+    SputterSource:
+      base_sections: 
+        - nomad_material_processing.physical_vapor_deposition.PVDSource
+      sub_sections:
+        material:
+          section:
+            base_sections:
+              - nomad.datamodel.metainfo.basesections.CompositeSystemReference
+            quantities:
+              reference: 
+                type: "#/SputterTarget"
+                m_annotations:
+                  eln:
+                    component: ReferenceEditQuantity
+        vapor_source:
+          section: "#/Magnetron"
+        vapor_distribution: #the flux/plume that the source produces
+          #define this as a separate entity? could add model parameters for distribution according to e.g. the Knudsen model (or other model for e.g. PLD)
+          section:
+            quantities:
+              shape:
+                type: str
+                description: e.g. Gaussian, uniform, etc
+            sub_sections: 
+              origin:
+                section: "#/Position"
+            description: the geometrical origin and direction of the vapor plume
 
     AutomateSolarSputterDeposition:
       base_sections:
@@ -245,7 +258,7 @@ definitions:
               environment:
                 section: "#/ChamberEnvironment"
               sources:
-                section: "#/Magnetron"
+                section: "#/SputterSource"
                 repeats: true
           repeats: true   
       
