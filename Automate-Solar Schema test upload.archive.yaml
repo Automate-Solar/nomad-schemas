@@ -110,6 +110,7 @@ definitions:
                 #would like to replace with Gas object but need directory/name
         
         setpoints: #is this the appropriate place to add these? i.e. the experimental settings for the values that are subsequently measured?
+        #setpoints might instead be added to the "step"
           section:
             quantities:
               pressure:
@@ -146,15 +147,113 @@ definitions:
         other_information:
           description: e.g. manufacturer, backing plate and bonding etc. 
           type: str              
-
-    
-    
-    ##works to here      
-        
-          
+      
+         
+      
 
     Magnetron: #The thing that is driving the vapour flux. 
-        base_sections:
-          - nomad_material_processing.physical_vapor_deposition.EvaporationSource
-        
+      base_sections:
+        - nomad_material_processing.physical_vapor_deposition.EvaporationSource
+      sub_sections:
+        setpoints: #settings that are supplied to/requested from the source
+          section:
+            quantities:
+              set_power: 
+                type: float
+                unit: watt
+              set_voltage:
+                type: float
+                unit: volt
+              set_current:
+                type: float
+                unit: ampere 
+        #below are the measured/actual values provided by the source
+        #power is already included in EvaporationSource but is extended here
+        power:
+          section: "#/TimeSeriesData"
+            ## NEED TO OVERWRITE UNITS IN TIME SERIES (HOW??)
+        voltage:
+          section: "#/TimeSeriesData"
+            ## NEED TO OVERWRITE UNITS IN TIME SERIES (HOW??)
+        current:
+          section: "#/TimeSeriesData"
+            ## NEED TO OVERWRITE UNITS IN TIME SERIES (HOW??)
 
+        
+        power_supply:
+          section:
+            quantities:
+              instrument_id:
+                type: str
+                description: identifier for a specific instrument 
+              supply_type:
+                type: str
+                description: e.g. RF or pulsed DC 
+              frequency:
+                type: int
+                unit: hertz
+                description: pulse frequence of source   
+  
+    
+    SputterFlux:  #the manifestation of sputtering flux
+      base_sections:
+        - nomad_material_processing.physical_vapor_deposition.PVDSource
+      sub_sections:
+        vapor_source: 
+          section: "#/Magnetron" #overwriting the existing one
+          #base_section: 
+        vapour_origin: 
+            section: "#/Position"
+        
+        material: #overwriting
+            section:
+              base_sections:
+                - nomad.datamodel.metainfo.basesections.CompositeSystemReference
+              sub_sections:
+              #CHECK THIS
+                sputter_target:  
+                    section:
+                      quantities:
+                        reference: 
+                          type: "#/SputterTarget" 
+    
+    AutomateSolarSputterDeposition:
+      base_sections:
+      - nomad_material_processing.physical_vapor_deposition.SputterDeposition
+      - nomad.datamodel.data.EntryData
+      sub_sections:
+        
+        presputtering:
+          section:
+            quantities:
+              presputter time:
+                type: int
+                shape: ['*'] #for each magnetron
+                unit: second
+              power_setpoints:
+                type: int
+                shape: ['*'] #for each magnetron
+                unit: watt
+              end_voltages:
+                type: int
+                shape: ['*'] #for each magnetron
+                unit: volt
+
+        steps:
+          sections: 
+            base_sections:
+            - nomad_material_processing.physical_vapor_deposition.VaporDepositionStep
+            sub_sections:
+              sources: #overwriting existing one
+                section: "#/Magnetron"
+              environment:
+                section: "#/ChamberEnvironment"
+          repeats: true    
+
+      quantities:
+        base_pressure:
+          type: float
+          unit: pascal
+          description: the base pressure of the vacuum chamber prior to initating an experiment  
+    
+##works to here

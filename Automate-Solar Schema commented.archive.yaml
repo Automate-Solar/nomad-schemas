@@ -233,7 +233,7 @@ definitions:
         sub_sections:
           vapor_source: #overwriting the existing one
             base_section: "#/Magnetron"
-          flux_origin: 
+          vapour_origin: 
             section: "#/Position" #position where the flux originates from (target centre position in this case)
           material: #overwriting
             section:
