@@ -110,7 +110,7 @@ definitions:
                 #would like to replace with Gas object but need directory/name
         
         setpoints: #is this the appropriate place to add these? i.e. the experimental settings for the values that are subsequently measured?
-        #setpoints might instead be added to the "step"
+        #setpoints might instead be added to the "step", but since the actual data are here, having the setpoints makes sense as well.
           section:
             quantities:
               pressure:
@@ -155,7 +155,7 @@ definitions:
           description: e.g. manufacturer, backing plate and bonding etc. 
           type: str              
 
-    Magnetron: #The thing that is creating the vapour flux. 
+    Magnetron: #The thing that is creating the vapor flux. 
       base_sections:
         - nomad_material_processing.physical_vapor_deposition.EvaporationSource
       sub_sections:
@@ -194,9 +194,10 @@ definitions:
             ## NEED TO OVERWRITE UNITS IN TIME SERIES (HOW??)
         
         material_flux: #the flux/plume that the source produces
+          #define this as a separate entity? could add model parameters for distribution according to e.g. the Knudsen model (or other model for e.g. PLD)
           section: "#/Position"
           description: the geometrical origin and direction of the vapor plume
-          #could also add model parameters for distribution according to e.g. the cos-cos model
+          
         
         power_supply:
           section:
