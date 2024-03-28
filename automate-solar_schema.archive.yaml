@@ -41,9 +41,9 @@ definitions:
       description: a general sensor that is placed in the PVD chamber
       sub_sections:
         position: 
-          section: "#/Position" 
+          sub_section: "#/Position" 
         sensor_data:
-          section: "#/TimeSeriesData"
+          sub_section: "#/TimeSeriesData"
                             
     QCMSensor: 
       description: a qcm sensor as a specific type of Sensor
@@ -60,7 +60,6 @@ definitions:
                 unit: hertz
         sensor_data:
           section:
-            base_section: "#/TimeSeriesData"
             quantities:
               values:
                 type: float
@@ -98,22 +97,28 @@ definitions:
                 unit: gram / meter**2
     
     ChamberEnvironment:
-      base_sections:
-        - nomad_material_processing.vapor_deposition.ChamberEnvironment #includes gas type and flow, pressure
+      base_sections: 
+       - nomad_material_processing.vapor_deposition.ChamberEnvironment #includes gas type and flow, pressure
       sub_sections:
         gas_flow:
-          section:  
+          section:
             base_section: "#/TimeSeriesData"
             quantities:
               values:
-                type: float  
+                type: float
                 unit: meter**3 / second
-
             sub_sections:
               gas:
                 section: nomad.datamodel.metainfo.basesections.PureSubstanceSection
-
-        setpoints: 
+        gas:
+          section:
+            quantities:
+              gas_type:
+                type: str
+                #would like to replace with Gas object but need directory/name
+        
+        setpoints: #is this the appropriate place to add these? i.e. the experimental settings for the values that are subsequently measured?
+        #setpoints might instead be added to the "step", but since the actual data are here, having the setpoints makes sense as well.
           section:
             quantities:
               pressure:
@@ -124,23 +129,15 @@ definitions:
                 unit: meter**3 / second
 
         pressure:
-          section:
-            base_section: "#/TimeSeriesData"
-            quantities:
-              values: 
-                type: float
-                unit: pascal
-              mean: 
-                type: float
-                unit: pascal
-              error: 
-                type: float
-                unit: pascal
-          
-        
+          section: "#/TimeSeriesData"
+          ## NEED TO OVERWRITE UNITS IN TIME SERIES (HOW??)
+        flow: 
+          section: "#/TimeSeriesData"
+          ## NEED TO OVERWRITE UNITS IN TIME SERIES (HOW??) 
         sensors:
           section: "#/QCMSensor"
-          repeats: true #is that OK to add SEVERAL QCM sensors?
+            #how/where to add SEVERAL QCM sensors?
+          repeats: true
 
     SputterTarget:
       base_sections:
@@ -155,9 +152,10 @@ definitions:
           unit: meter
         other_information:
           description: e.g. manufacturer, backing plate and bonding etc. 
-          type: str              
-          a_eln:
-            component: RichTextEditQuantity
+          type: str
+          m_annotations:
+            eln:
+              component: RichTextEditQuantity            
 
     Magnetron: #The thing that is creating the vapor flux. 
       base_sections:
@@ -177,42 +175,21 @@ definitions:
                 unit: ampere 
         #below are the measured/actual values provided by the source
         power:
-          section:
-            base_section: "#/TimeSeriesData"
-            quantities:
-              values: 
-                  type: float
-                  unit: watt
-              mean: 
-                  type: float
-                  unit: watt
-              error: 
-                  type: float
-                  unit: watt
+          section: "#/TimeSeriesData"
+            ## NEED TO OVERWRITE UNITS IN TIME SERIES (HOW??)
         voltage:
-          section:
-            base_section: "#/TimeSeriesData"
+          section: "#/TimeSeriesData"
+            ## NEED TO OVERWRITE UNITS IN TIME SERIES (HOW??)
         current:
-          section:
-            base_section: "#/TimeSeriesData"
-            quantities:
-              values: 
-                  type: float
-                  unit: ampere
-              mean: 
-                  type: float
-                  unit: ampere
-              error: 
-                  type: float
-                  unit: ampere
-         
+          section: "#/TimeSeriesData"
+            ## NEED TO OVERWRITE UNITS IN TIME SERIES (HOW??)
         
         power_supply:
           section:
             quantities:
               instrument_id:
                 type: str
-                description: identifier for a specific instrument #could become a reference to an actual object (later)
+                description: identifier for a specific instrument 
               supply_type:
                 type: str
                 description: e.g. RF or pulsed DC 
@@ -222,7 +199,7 @@ definitions:
                 description: pulse frequence of source   
 
     SputterSource:
-      base_sections:
+      base_sections: 
         - nomad_material_processing.physical_vapor_deposition.PVDSource
       sub_sections:
         material:
@@ -231,32 +208,23 @@ definitions:
               - nomad.datamodel.metainfo.basesections.CompositeSystemReference
             quantities:
               reference: 
-                type: "#/SputterTarget" 
+                type: "#/SputterTarget"
                 m_annotations:
                   eln:
                     component: ReferenceEditQuantity
         vapor_source:
-          section: "#Magnetron"
-        vapor_distribution:
-          section:  
-            description: the geometrical origin and direction and spread of the vapor plume
+          section: "#/Magnetron"
+        vapor_distribution: #the flux/plume that the source produces
+          #define this as a separate entity? could add model parameters for distribution according to e.g. the Knudsen model (or other model for e.g. PLD)
+          section:
             quantities:
               shape:
                 type: str
-                description: info on e.g. what model is used
-                a_eln:
-                  component: RichTextEditQuantity
-              n_parameter:
-                type: float
-                description: in the Knudsen model, the exponent defining the spread of the plume
-              A_parameter:
-                type: float
-                description: in the Knudsen model, the coefficient defining the flux intensity
-            sub_sections:
+                description: e.g. Gaussian, uniform, etc
+            sub_sections: 
               origin:
                 section: "#/Position"
-                description: the location of origin and the direction of the vapour plume
-            
+            description: the geometrical origin and direction of the vapor plume
 
     AutomateSolarSputterDeposition:
       base_sections:
