@@ -1,4 +1,4 @@
-  definitions:
+definitions:
   #impinging flux: amount of a specific material from the PVD source that impinges on the substrate per unit time
   #normalise function can do e.g. applying QCM model to calc fluxes form sources
   
@@ -239,7 +239,7 @@
           section: "#Magnetron"
         vapor_distribution:
           section:  
-            description: the geometrical origin and direction and spread of the vapor plume
+            description: information on the geometrical origin, direction and spread of the vapor plume
             quantities:
               shape:
                 type: str
@@ -294,7 +294,7 @@
                 repeats: true
           repeats: true   
       
-#samples
-#instrument info
+# #samples
+# #instrument info
 
     
