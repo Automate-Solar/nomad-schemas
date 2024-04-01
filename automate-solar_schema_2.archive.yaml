@@ -1,0 +1,300 @@
+definitions:
+#impinging flux: amount of a specific material from the PVD source that impinges on the substrate per unit time
+#normalise function can do e.g. applying QCM model to calc fluxes form sources
+
+name: Automate-Solar Schema
+sections:
+  Position: #reusable for all objects that have a position in the sputtering (or other) process
+    description: In BERTHA's coordinate system, x is the axis via which the substrate is loaded (increasing in the same direction), and z is vertical. x = y = z = 0 is the centre of the substrate holder upon loading in the chamber 
+    quantities:
+      center_xyz:
+        type: float
+        unit: meter
+        shape: [3]
+        description: 
+      center_normal:
+        type: float
+        shape: [3]
+        description: (unit) vector describing the direction of the source
+      rotation:
+        type: float
+        description: angle of rotation of object around its centre_normal
+
+    # TimeSeriesData: #reusable for all time series data
+    #   quantities:
+    #     times:
+    #       type: float
+    #       shape: ['*']
+    #       unit: second
+    #     values:
+    #       type: float
+    #       shape: ['*']
+    #       unit: volt
+    #     mean:
+    #       type: float
+    #       unit: volt
+    #     error:
+    #       type: float
+    #       unit: volt
+          
+    # Sensor:
+    #   description: a general sensor that is placed in the PVD chamber
+    #   sub_sections:
+    #     position: 
+    #       section: "#/Position" 
+    #     sensor_data:
+    #       section: "#/TimeSeriesData"
+                            
+    # QCMSensor: 
+    #   description: a qcm sensor as a specific type of Sensor
+    #   base_section: "#/Sensor"
+    #   sub_sections: 
+    #     crystal_info:
+    #       section:
+    #         quantities:
+    #           info:
+    #             description: e.g. contact materials, part number etc
+    #             type: str
+    #           resonant_frequency:
+    #             type: float
+    #             unit: hertz
+    #     sensor_data:
+    #       section:
+    #         base_section: "#/TimeSeriesData"
+    #         quantities:
+    #           values:
+    #             type: float
+    #             unit: hertz
+    #           mean:
+    #             type: float
+    #             unit: hertz
+    #           error:
+    #             type: float
+    #             unit: hertz
+    #     remaining_lifetime:
+    #       section:
+    #         quantities:
+    #           value:
+    #             type: float
+    #           error: 
+    #             type: float
+    #     frequency_change:
+    #       section:
+    #         quantities:
+    #           value:
+    #             type: float
+    #             unit: hertz
+    #           error:
+    #             type: float
+    #             unit: hertz
+    #     mass_change:
+    #       section:
+    #         quantities:
+    #           value:
+    #             type: float
+    #             unit: gram / meter**2
+    #           error:
+    #             type: float
+    #             unit: gram / meter**2
+    
+    # ChamberEnvironment:
+    #   base_sections:
+    #     - nomad_material_processing.vapor_deposition.ChamberEnvironment #includes gas type and flow, pressure
+    #   sub_sections:
+    #     gas_flow:
+    #       section:  
+    #         base_section: "#/TimeSeriesData"
+    #         quantities:
+    #           values:
+    #             type: float  
+    #             unit: meter**3 / second
+
+    #         sub_sections:
+    #           gas:
+    #             section: nomad.datamodel.metainfo.basesections.PureSubstanceSection
+
+    #     setpoints: 
+    #       section:
+    #         quantities:
+    #           pressure:
+    #             type: float
+    #             unit: pascal
+    #           flow:
+    #             type: float
+    #             unit: meter**3 / second
+
+    #     pressure:
+    #       section:
+    #         base_section: "#/TimeSeriesData"
+    #         quantities:
+    #           values: 
+    #             type: float
+    #             unit: pascal
+    #           mean: 
+    #             type: float
+    #             unit: pascal
+    #           error: 
+    #             type: float
+    #             unit: pascal
+          
+        
+    #     sensors:
+    #       section: "#/QCMSensor"
+    #       repeats: true #is that OK to add SEVERAL QCM sensors?
+
+    # SputterTarget:
+    #   base_sections:
+    #     - nomad.datamodel.metainfo.basesections.CompositeSystem
+    #     - nomad.datamodel.data.EntryData
+    #   quantities:
+    #     area:
+    #       type: float
+    #       unit: meter**2
+    #     thickness:
+    #       type: int
+    #       unit: meter
+    #     other_information:
+    #       description: e.g. manufacturer, backing plate and bonding etc. 
+    #       type: str              
+    #       a_eln:
+    #         component: RichTextEditQuantity
+
+    # Magnetron: #The thing that is creating the vapor flux. 
+    #   base_sections:
+    #     - nomad_material_processing.physical_vapor_deposition.EvaporationSource
+    #   sub_sections:
+    #     setpoints: #settings that are supplied to/requested from the source
+    #       section:
+    #         quantities:
+    #           set_power: 
+    #             type: float
+    #             unit: watt
+    #           set_voltage:
+    #             type: float
+    #             unit: volt
+    #           set_current:
+    #             type: float
+    #             unit: ampere 
+    #     #below are the measured/actual values provided by the source
+    #     power:
+    #       section:
+    #         base_section: "#/TimeSeriesData"
+    #         quantities:
+    #           values: 
+    #               type: float
+    #               unit: watt
+    #           mean: 
+    #               type: float
+    #               unit: watt
+    #           error: 
+    #               type: float
+    #               unit: watt
+    #     voltage:
+    #       section:
+    #         base_section: "#/TimeSeriesData"
+    #     current:
+    #       section:
+    #         base_section: "#/TimeSeriesData"
+    #         quantities:
+    #           values: 
+    #               type: float
+    #               unit: ampere
+    #           mean: 
+    #               type: float
+    #               unit: ampere
+    #           error: 
+    #               type: float
+    #               unit: ampere
+         
+        
+    #     power_supply:
+    #       section:
+    #         quantities:
+    #           instrument_id:
+    #             type: str
+    #             description: identifier for a specific instrument #could become a reference to an actual object (later)
+    #           supply_type:
+    #             type: str
+    #             description: e.g. RF or pulsed DC 
+    #           frequency:
+    #             type: int
+    #             unit: hertz
+    #             description: pulse frequence of source   
+
+    # SputterSource:
+    #   base_sections:
+    #     - nomad_material_processing.physical_vapor_deposition.PVDSource
+    #   sub_sections:
+    #     material:
+    #       section:
+    #         base_sections:
+    #           - nomad.datamodel.metainfo.basesections.CompositeSystemReference
+    #         quantities:
+    #           reference: 
+    #             type: "#/SputterTarget" 
+    #             m_annotations:
+    #               eln:
+    #                 component: ReferenceEditQuantity
+    #     vapor_source:
+    #       section: "#Magnetron"
+    #     vapor_distribution:
+    #       section:  
+    #         description: the geometrical origin and direction and spread of the vapor plume
+    #         quantities:
+    #           shape:
+    #             type: str
+    #             description: info on e.g. what model is used
+    #             a_eln:
+    #               component: RichTextEditQuantity
+    #           n_parameter:
+    #             type: float
+    #             description: in the Knudsen model, the exponent defining the spread of the plume
+    #           A_parameter:
+    #             type: float
+    #             description: in the Knudsen model, the coefficient defining the flux intensity
+    #         sub_sections:
+    #           origin:
+    #             section: "#/Position"
+    #             description: the location of origin and the direction of the vapour plume
+            
+
+    # AutomateSolarSputterDeposition:
+    #   base_sections:
+    #   - nomad_material_processing.physical_vapor_deposition.SputterDeposition
+    #   - nomad.datamodel.data.EntryData
+    #   sub_sections:
+    #     preparation:
+    #       section:
+    #         quantities:
+    #           base_pressure:
+    #             type: float
+    #             unit: pascal
+    #             description: the base pressure of the vacuum chamber prior to initating an experiment  
+    #           presputter time:
+    #             type: int
+    #             shape: ['*'] #for each magnetron
+    #             unit: second
+    #           power_setpoints:
+    #             type: int
+    #             shape: ['*'] #for each magnetron
+    #             unit: watt
+    #           end_voltages:
+    #             type: int
+    #             shape: ['*'] #for each magnetron
+    #             unit: volt
+    #     steps:
+    #       section:
+    #         base_sections:
+    #         - nomad_material_processing.physical_vapor_deposition.VaporDepositionStep
+    #         sub_sections:
+    #           environment:
+    #             section: "#/ChamberEnvironment"
+    #           sources:
+    #             section: "#/SputterSource"
+    #             repeats: true
+    #       repeats: true   
+      
+#samples
+#instrument info
+
+    
