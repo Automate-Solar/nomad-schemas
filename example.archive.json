@@ -1,0 +1,33 @@
+{
+    "data": {
+        "m_def": "../upload/raw/automate-solar_schema.archive.yaml#/definitions/section_definitions/8",
+        "name": "Testing to upload archive",
+        "datetime": "2024-04-09T12:21:42.004278+00:00",
+        "steps": [
+            {
+                "name": "Testing step 1",
+                "sources": [
+                    {
+                        "material": {
+                            "lab_id": "jonathans_favorite_target"
+                        }
+                    }
+                ]
+            },
+            {
+                "name": "Testing step 2",
+                "environment": {
+                    "gas_flow": {
+                        "gas": {
+                            "m_def": "nomad.datamodel.metainfo.basesections.PubChemPureSubstanceSection",
+                            "pub_chem_cid": 23968
+                        }
+                    }
+                }
+            }
+        ],
+        "preparation": {
+            "base_pressure": 0.003
+        }
+    }
+}
