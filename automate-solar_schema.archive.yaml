@@ -231,16 +231,7 @@ definitions:
         - nomad_material_processing.physical_vapor_deposition.PVDSource
       sub_sections:
         material:  # [from MongoDB]: Material Ax1 (and 2 and 3), converting from str to the NOMAD material object 
-          section:
-            base_sections:
-              - nomad.datamodel.metainfo.basesections.CompositeSystemReference
-
-            quantities:
-              reference: 
-                type: "#/SputterTarget" 
-                m_annotations:
-                  eln:
-                    component: ReferenceEditQuantity
+          section: "#/SputterTargetReference"
         vapor_source:
           section: "#Magnetron"
         vapor_distribution:
@@ -261,8 +252,7 @@ definitions:
             sub_sections:
               origin:
                 section: "#/Position" # [from MongoDB]: not yet, but to be calculated and added
-                description: the location of origin and the direction of the vapour plume
-            
+                description: the location of origin and the direction of the vapour plume 
 
     AutomateSolarSputterDeposition:
       base_sections:
@@ -286,25 +276,39 @@ definitions:
                 description: the base pressure of the vacuum chamber prior to initating an experiment  
               presputtering: # [from MongoDB]: Pre-sputter_description
                 type: str  
-                
+
         steps:
-          section:
-            base_sections:
-            - nomad_material_processing.physical_vapor_deposition.VaporDepositionStep
-            # SputterDeposition has the following quantities:
-            # quantity <-- [from MongoDB]: 
-            # name <-- Run_ID + Step_number 
-            # start_time <-- first value from time series
-            # comment <-- NA
-            # creates_new_thin_film <-- Sample_produced
-            # duration <-- Dwell_time[s]
-            sub_sections:
-              environment:
-                section: "#/ChamberEnvironment"
-              sources:
-                section: "#/SputterSource"
-                repeats: true
+          section: "#/SputterDepositionStep"
           repeats: true   
+
+# Previously nested definitions:
+
+    SputterTargetReference:
+      base_sections:
+        - nomad.datamodel.metainfo.basesections.CompositeSystemReference
+      quantities:
+        reference: 
+          type: "#/SputterTarget" 
+          m_annotations:
+            eln:
+              component: ReferenceEditQuantity
+    
+    SputterDepositionStep:
+      base_sections:
+        - nomad_material_processing.physical_vapor_deposition.VaporDepositionStep
+      # SputterDeposition has the following quantities:
+      # quantity <-- [from MongoDB]: 
+      # name <-- Run_ID + Step_number 
+      # start_time <-- first value from time series
+      # comment <-- NA
+      # creates_new_thin_film <-- Sample_produced
+      # duration <-- Dwell_time[s]
+      sub_sections:
+        environment:
+          section: "#/ChamberEnvironment"
+        sources:
+          section: "#/SputterSource"
+          repeats: true 
       
 # #samples
 # #instrument info
