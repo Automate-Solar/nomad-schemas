@@ -5,7 +5,7 @@ data:
   # AutomateSolarSputterDeposition Base section
   quantity : 0                                      # [from MongoDB]: NA
   name : "BaZrSn_001_097_1"                         # Run_ID
-  datetime: "03/21/2024"                            # Date
+  datetime: "2024-03-21"                            # Date
   lab_id : "Uppsala University Åutomate-Solar"      # Same every time
   description: "Sputter setup with Ba, Zr and Sn for development of BEA supervisor, BaZrSn_001, ML-model-selection-Zirconium" # Campaign description + campaign code + Series description
   
@@ -74,8 +74,7 @@ data:
         values: [40,40,40]   # [from MongoDB]: Gas_flow_[sccm]
         mean : 40            # [from MongoDB]: Gas_flow_[sccm]_Mean
         error : 1            # [from MongoDB]: Gas_flow_[sccm]_STD
-        
-          gas: "some identifier string or int"  # This is where we do the pubchem search thingy
+        gas: "some identifier string or int"  # This is where we do the pubchem search thingy
 
       # Setpoints subsection
       setpoints:
