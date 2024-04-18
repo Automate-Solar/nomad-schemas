@@ -13,103 +13,103 @@ data:
   steps : 
   
     # sources = SputterSource section, contains: (SputterTarget, Magnetron, Position)
-    sources:
+    - sources:
 
-    # ...physical_vapor_deposition.PVDSource data
-    # ------ REPEAT below for each target, only one (Zr) defined for now
-      - name : "Zr"
+      # ...physical_vapor_deposition.PVDSource data
+      # ------ REPEAT below for each target, only one (Zr) defined for now
+        - name : "Zr"
 
-        # material = SputterTarget section
-        material : 
-          name : "Zr"
-          lab_id : "lab id of Zr source"
+          # material = SputterTarget section
+          material : 
+            name : "Zr"
+            lab_id : "lab id of Zr source"
 
-        # vapor_source = Magnetron section, contains: (setpoints, power (TS), voltage(TS), current(TS), power_supply)
-        vapor_source:
+          # vapor_source = Magnetron section, contains: (setpoints, power (TS), voltage(TS), current(TS), power_supply)
+          vapor_source:
 
-          # Power_Ax_setpoint
-          setpoints:
-            set_power : 0         #[from MongoDB]: Power_Ax_setpoint_[W]
-            set_voltage : 0       #[from MongoDB]: NA
-            set_current : 0       #[from MongoDB]: NA
+            # Power_Ax_setpoint
+            setpoints:
+              set_power : 0         #[from MongoDB]: Power_Ax_setpoint_[W]
+              set_voltage : 0       #[from MongoDB]: NA
+              set_current : 0       #[from MongoDB]: NA
 
-          # Actual_Power_Ax
-          power:
-            values : [0,1,2]      # Actual_Power_Ax_[W] 
-            times : [0,1,2]       # Time_[s]
-            mean : 1              # Actual_Power_Ax_[W]_Mean
-            error : 1             # Actual_Power_Ax_[W]_STD
+            # Actual_Power_Ax
+            power:
+              values : [0,1,2]      # Actual_Power_Ax_[W] 
+              times : [0,1,2]       # Time_[s]
+              mean : 1              # Actual_Power_Ax_[W]_Mean
+              error : 1             # Actual_Power_Ax_[W]_STD
 
-          # Voltage_Ax
-          voltage : 
-            values: [0,1,2]       # Voltage_Ax_[V]
-            times : [0,1,2]       # Time_[s]
-            mean : 1              # Voltage_Ax_[V]_Mean
-            error : 1             # Voltage_Ax_[V]_STD
-          
-          # Current (not yet added)
-          current : 
-            values : [0,1,2]      # Current_Ax_[A]
-            times : [0,1,2]       # Time_[s]
-            mean : 1              # Current_Ax_[A]_Mean
-            error : 1             # Current_Ax_[A]_STD
-          
-          # Power Supply Ax
-          power_supply :
-            instrument_id : "Power Supply Ax1"  # [from MongoDB]: "Power Supply Ax" (key, not the val)
-            supply_type : "To be added"         # Not yet added
-            frequency : "RF"                    # [from MongoDB]: Power Supply Ax 1 Pulse Rate
+            # Voltage_Ax
+            voltage : 
+              values: [0,1,2]       # Voltage_Ax_[V]
+              times : [0,1,2]       # Time_[s]
+              mean : 1              # Voltage_Ax_[V]_Mean
+              error : 1             # Voltage_Ax_[V]_STD
+            
+            # Current (not yet added)
+            current : 
+              values : [0,1,2]      # Current_Ax_[A]
+              times : [0,1,2]       # Time_[s]
+              mean : 1              # Current_Ax_[A]_Mean
+              error : 1             # Current_Ax_[A]_STD
+            
+            # Power Supply Ax
+            power_supply :
+              instrument_id : "Power Supply Ax1"  # [from MongoDB]: "Power Supply Ax" (key, not the val)
+              supply_type : "RF"                  # Hampus modified this! Previously: Not yet added"
+              frequency : null                    # Hampus modified this! Previously: [from MongoDB]: Power Supply Ax 1 Pulse Rate"
 
-        # position = Position section
-        position:
-          center_xyz: [0,0,0]
-          center_normal: [0,0,0]
-          rotation: 0 
+          # position = Position section
+          position:
+            center_xyz: [0,0,0]
+            center_normal: [0,0,0]
+            rotation: 0 
 
-    # environment = ChamberEnvironment section
-    environment:
-      
-      # Gas flow subsection
-      gas_flow:
-        values: [40,40,40]   # [from MongoDB]: Gas_flow_[sccm]
-        mean : 40            # [from MongoDB]: Gas_flow_[sccm]_Mean
-        error : 1            # [from MongoDB]: Gas_flow_[sccm]_STD
-        gas: "some identifier string or int"  # This is where we do the pubchem search thingy
-
-      # Setpoints subsection
-      setpoints:
-        pressure: 40         # [from MongoDB]: Pressure_setpoint_[mTorr]
-        flow: 0              # [from MongoDB]: none yet but we need to add it
-
-      # Pressure subsection
-      pressure:
-        values: [39,41,40]   # [from MongoDB]: Actual_pressure_[mTorr]
-        mean: 40             # [from MongoDB]: Actual_pressure_[mTorr]_mean
-        error: 1             # [from MongoDB]: Actual_pressure_[mTorr]_STD
-
-      # Sensors subsection (sensor = QCMSensor section) 
-      sensors:
+      # environment = ChamberEnvironment section
+      environment:
         
-        # Crystal info subsection (REPEAT FOR QCM SENSORS 2,3)
-        - crystal_info:
-            info: "to be added"     # [from MongoDB]: None yet, to be added to campaign info
-            resonant_frequency: 0   # [from MongoDB]: None yet, to be added to campaign info
+        # Gas flow subsection
+        gas_flow:
+          values: [40,40,40]   # [from MongoDB]: Gas_flow_[sccm]
+          mean : 40            # [from MongoDB]: Gas_flow_[sccm]_Mean
+          error : 1            # [from MongoDB]: Gas_flow_[sccm]_STD
+          gas: "some identifier string or int"  # This is where we do the pubchem search thingy
+
+        # Setpoints subsection
+        setpoints:
+          pressure: 40         # [from MongoDB]: Pressure_setpoint_[mTorr]
+          flow: 0              # [from MongoDB]: none yet but we need to add it
+
+        # Pressure subsection
+        pressure:
+          values: [39,41,40]   # [from MongoDB]: Actual_pressure_[mTorr]
+          mean: 40             # [from MongoDB]: Actual_pressure_[mTorr]_mean
+          error: 1             # [from MongoDB]: Actual_pressure_[mTorr]_STD
+
+        # Sensors subsection (sensor = QCMSensor section) 
+        sensors:
           
-          # Sensor data subsection
-          sensor_data:
-            values: [0,1,2]   # [from MongoDB]: QCM_1_frequency_[Hz]
-            mean: 1           # [from MongoDB]: NA
-            error: 1          # [from MongoDB]:  none yet, but we will need to add this
-            slope: 0          # [from MongoDB]: QCM_1_rate_[df/dt]
+          # Crystal info subsection (REPEAT FOR QCM SENSORS 2,3)
+          - crystal_info:
+              info: "to be added"     # [from MongoDB]: None yet, to be added to campaign info
+              resonant_frequency: 0   # [from MongoDB]: None yet, to be added to campaign info
+            
+            # Sensor data subsection
+            sensor_data:
+              values: [0,1,2]   # [from MongoDB]: QCM_1_frequency_[Hz]
+              mean: 1           # [from MongoDB]: NA
+              error: 1          # [from MongoDB]:  none yet, but we will need to add this
+              slope: 0          # [from MongoDB]: QCM_1_rate_[df/dt]
 
 
-          # Remaining lifetime subsection
-          remaining_lifetime:
-            - value: 85.9  #[from MongoDB]: QCM_xtal_1_lifetime_[%] (PS! REPEAT FOR 2,3)
+            # Remaining lifetime subsection
+            remaining_lifetime:
+              - value: 85.9  #[from MongoDB]: QCM_xtal_1_lifetime_[%] (PS! REPEAT FOR 2,3)
 
-          # Mass deposition rate subsection
-          mass_deposition_rate:
-            value: 0  # None yet, to be added to MongoDB
-            error: 0  # None yet, to be added to MongoDB
+            # Mass deposition rate subsection
+            mass_deposition_rate:
+              value: 0  # None yet, to be added to MongoDB
+              error: 0  # None yet, to be added to MongoDB
 
   
