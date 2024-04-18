@@ -67,6 +67,7 @@ definitions:
             base_section: "#/TimeSeriesData"
             quantities:
               values: #[from MongoDB]: QCM_1_frequency_[Hz] **OBS repeat for each sensor 1-3. Ask Hampus how to do that
+                shape: ['*']
                 type: float
                 unit: hertz
               mean: #[from MongoDB]: NA
@@ -103,6 +104,7 @@ definitions:
             base_section: "#/TimeSeriesData"
             quantities: 
               values: #[from MongoDB]: Gas_flow_[sccm]
+                shape: ['*']
                 type: float  
                 unit: meter**3 / second
               mean: #[from MongoDB]: Gas_flow_[sccm]_Mean
@@ -132,6 +134,7 @@ definitions:
             base_section: "#/TimeSeriesData"
             quantities:
               values: #[from MongoDB]: Actual_pressure_[mTorr]
+                shape: ['*']
                 type: float
                 unit: pascal
               mean: #[from MongoDB]: Actual_pressure_[mTorr]_mean
@@ -185,14 +188,15 @@ definitions:
             base_section: "#/TimeSeriesData"
             quantities:
               values: #[from MongoDB]: Actual_Power_Ax1_[W] ***OBS repeat for x magnetrons
-                  type: float
-                  unit: watt
+                shape: ['*']
+                type: float
+                unit: watt
               mean: 
-                  type: float
-                  unit: watt
+                type: float
+                unit: watt
               error: 
-                  type: float
-                  unit: watt
+                type: float
+                unit: watt
         voltage:
           section:
             base_section: "#/TimeSeriesData"
@@ -203,14 +207,15 @@ definitions:
             base_section: "#/TimeSeriesData"
             quantities:
               values: # [from MongoDB]: none yet but we need to add it
-                  type: float
-                  unit: ampere
+                shape: ['*']
+                type: float
+                unit: ampere
               mean: # [from MongoDB]: none yet but we need to add it
-                  type: float
-                  unit: ampere
+                type: float
+                unit: ampere
               error: # [from MongoDB]: none yet but we need to add it
-                  type: float
-                  unit: ampere
+                type: float
+                unit: ampere
          
         power_supply:
           section:
