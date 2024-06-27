@@ -1,0 +1,46 @@
+Emir 25 June
+I think I’m done with data parsing/fetching from nomad, unless there is anything you want to go over below:
+
+The most straightforward option is to fetch via upload ID, as I mentioned earlier. See the following example:
+https://github.com/emiresenov/BERTHA-NOMAD/blob/main/notebooks/Fetching%20data%20example%201.ipynb
+However, as I mentioned earlier, this might be a very limited use case since you need to keep track of all upload_ids.
+
+A second alternative is to gather data in nomad datasets. You can either create a dataset manually via nomad, or via code, like so:
+https://nomad-lab.eu/prod/v1/staging/docs/howto/programmatic/publish_python.html
+This is similar to how we currently upload data to nomad in nomad_upload.py, but with this extra instruction:
+
+  dataset_id = create_dataset(nomad_url, token, 'Test_Dataset')
+ 
+
+However, whereas the code in nomad_upload.py uploads/publishes data with every experiment iteration, presumbably you don’t want to create a new dataset every iteration, so you can’t just add this to nomad_upload.py. For example, if you want to create a dataset for every series, then you can create one dataset at the start of each series and save the dataset_id.
+The dataset_id would then be added to the metadata of each new upload before publishing in nomad_upload.py, like so: (edited) 
+
+  Now that the upload processing is complete, we can add coauthors, references, and other comments, as well as link to a dataset and provide a proper name for the upload:
+  
+        metadata = {
+            "metadata": {
+            "upload_name": 'Test_Upload',
+            "references": ["https://doi.org/xx.xxxx/x.xxxx"],
+            "datasets": dataset_id,
+            "embargo_length": 0,
+            "coauthors": ["coauthor@affiliation.de"],
+            "comment": 'This is a test upload...',
+        },
+      }
+      response = edit_upload_metadata(nomad_url, token, upload_id, metadata)
+      
+      #Check the upload again to make sure that the metadata was changed:
+      
+      last_status_message = check_upload_status(nomad_url, token, upload_id)
+      print(last_status_message)
+      'Process edit_upload_metadata completed successfully'
+
+
+And that way, every upload gets added to a specified dataset.
+
+For fetching data from a specific dataset, I’ve created this example:
+https://github.com/emiresenov/BERTHA-NOMAD/blob/main/notebooks/Fetching%20data%20example%202.ipynb
+GitHubGitHub
+
+
+For dealing with the data once you have it, the examples that I have provided gets the exact same data that we pushed as yaml to nomad in a dictionary. What the nomad parsing does is that it offers you a library so you can access the data in python classes instead of just a dictionary. For this you need to install the nomad-lab package via pip install nomad-lab. However, this does not work on a fresh install of conda due to faulty package dependencies. I asked Hampus about this and he recommended downgrading to Python 3.9. I tried that, and a bunch of other things, but I couldn't get it to work, so parsing is not something I’ve experimented with. (edited) 
